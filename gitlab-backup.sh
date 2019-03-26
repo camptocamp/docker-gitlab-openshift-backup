@@ -49,7 +49,7 @@ else
     METRICS=\$(
     echo "#TYPE gitlab_backup_repo gauge";
     echo "\$output" | 
-    awk -v "h=\$HOSTNAME" -v "ostype=\$OSTYPE"  '/ .*\[.*\]/{
+    awk -v h="\$HOSTNAME" -v ostype="\$OSTYPE"  '/ .*\[.*\]/{
     gsub("Dumping","");
     gsub("\[DONE\]",0);
     gsub("\[SKIPPED\]",1);
@@ -68,7 +68,7 @@ else
 EOF
 )
 fi
-echo $CMD
-#POD=$(oc get pod  -o jsonpath='{.items.*.metadata.name}' | sed 's/ /\n/g' | grep 'gitlab-task-runner-') 
 
-oc exec $POD -it $CMD || exit 0
+POD=$(oc get pod  -o jsonpath='{.items.*.metadata.name}' | sed 's/ /\n/g' | grep 'gitlab-task-runner-') 
+echo $CMD
+oc exec $POD -it "'""$CMD""'" || exit 0
