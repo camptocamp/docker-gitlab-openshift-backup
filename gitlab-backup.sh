@@ -16,6 +16,7 @@ function usage()
     echo "./gitlab-backup.sh"
     echo "\t-h --help"
     echo "\t-p=prometheus_pushgateway_url (reports metrics backup)"
+    echo "\-s=sre_team (sret1 or sret2, etc..)"
     echo "\t--db-path=$DB_PATH"
     echo ""
 }
@@ -29,8 +30,11 @@ while [ "$1" != "" ]; do
             exit
             ;;
         -p)
-            prometheus_pushgateway_url=$VALUE
+            PROMETHEUS_PUSHGATEWAY_URL=$VALUE
             ;;
+        -s)
+           SRE_TEAM=$VALUE
+           ;;
         *)
             echo "ERROR: unknown parameter \"$PARAM\""
             usage
@@ -40,12 +44,20 @@ while [ "$1" != "" ]; do
     shift
 done
 
-if [ -z "$prometheus_pushgateway_url" ]; then
+if [ -z "$SRE_TEAM" ]; then
+ echo "please define sre team paramete example -s=sret1"
+fi
+
+if [ -z "$PROMETHEUS_PUSHGATEWAY_URL" ]; then
  CMD='backup-utility'
 else
     CMD=$(cat <<-EOF
+    # execute the backup and capture the output
     output=\$(backup-utility);
+    # caputre the backup success result
     RESULT=\$?;
+    # use awk to tranform logs into metric... 
+    # todo srape all this and do with ELK....
     METRICS=\$(
     echo "#TYPE gitlab_backup_repo gauge";
     echo "\$output" | 
@@ -60,11 +72,11 @@ else
     gsub("/","-");
     gsub("-","_");
     printf "gitlab_backup_repo {repo=\"" \$1 "\",certname=\"%s\",os=\"%s\",
-    project=\"chtopo_gitlab_backup\",line=\"production\",sre_team=\"sret1\"} %d\n",h,ostype, \$NF;
+    project=\"chtopo_gitlab_backup\",line=\"production\",sre_team=\"$SRE_TEAM\"} %d\n",h,ostype, \$NF;
     }'; 
     echo -e "#TYPE gitlab_backup_success gauge\ngitlab_backup_success{certname=\"\$HOSTNAME\",os=\"\$OSTYPE\",
-    project=\"chtopo_gitlab_backup\",line=\"production\",sre_team=\"sret1\"} \$RESULT\n");
-    echo -e "\$METRICS" | curl --data-binary @- $prometheus_pushgateway_url
+    project=\"chtopo_gitlab_backup\",line=\"production\",sre_team=\"$SRE_TEAM\"} \$RESULT\n");
+    echo -e "\$METRICS" | curl --data-binary @- $PROMETHEUS_PUSHGATEWAY_URL
 EOF
 )
 fi
