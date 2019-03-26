@@ -57,10 +57,13 @@ else
     # caputre the backup success result
     RESULT=\$?;
     # use awk to tranform logs into metric... 
-    # todo srape all this and do with ELK....
+    # todo scrape all this and do with ELK....
     METRICS=\$(
+    #define the type of metric 
+    #for every repo we have a metric indicating backup success
     echo "#TYPE gitlab_backup_repo gauge";
     echo "\$output" | 
+    # awk is your friend to transform with into prometheus metrics
     awk -v h="\$HOSTNAME" -v ostype="\$OSTYPE"  '/ .*\[.*\]/{
     gsub("Dumping","");
     gsub("\[DONE\]",0);
@@ -74,6 +77,7 @@ else
     printf "gitlab_backup_repo {repo=\"" \$1 "\",certname=\"%s\",os=\"%s\",
     project=\"chtopo_gitlab_backup\",line=\"production\",sre_team=\"$SRE_TEAM\"} %d\n",h,ostype, \$NF;
     }'; 
+    # finaly the global sucess of the backup
     echo -e "#TYPE gitlab_backup_success gauge\ngitlab_backup_success{certname=\"\$HOSTNAME\",os=\"\$OSTYPE\",
     project=\"chtopo_gitlab_backup\",line=\"production\",sre_team=\"$SRE_TEAM\"} \$RESULT\n");
     echo -e "\$METRICS" | curl --data-binary @- $PROMETHEUS_PUSHGATEWAY_URL
