@@ -80,8 +80,7 @@ else
         gsub(" \* ","");
         gsub("/","-");
         gsub("-","_");
-        printf "gitlab_backup_repo {repo=\"" $1 "\",certname=\"%s\",os=\"%s\",
-        project=\"gitlab_backup\",line=\"%s\",sre_team=\"%s\"} %d\n",h,ostype,line,sre_team, $NF;
+        printf "gitlab_backup_repo {repo=\"%s\",certname=\"%s\",os=\"%s\",project=\"gitlab_backup\",line=\"%s\",sre_team=\"%s\"} %d\n",$1,h,ostype,line,sre_team, $NF;
         }'; 
         # finaly the global sucess of the backup
         echo -e "#TYPE gitlab_backup_success gauge\n
