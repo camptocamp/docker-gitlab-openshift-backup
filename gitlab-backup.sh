@@ -91,6 +91,7 @@ else
     echo -e "$METRICS" | curl --data-binary @- $PROMETHEUS_PUSHGATEWAY_URL || exit 0
     # never fail, because failure is bad
     echo "$OUTPUT"
+    echo "$METRICS"
     echo "result=$RESULT"
     exit 0 
 fi
