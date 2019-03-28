@@ -17,9 +17,10 @@ function usage()
     echo "\t-h --help"
     echo "\t-p=prometheus_pushgateway_url (reports metrics backup)"
     echo "\-s=sre_team (sret1 or sret2, etc..)"
-    echo "\t--db-path=$DB_PATH"
+    echo "\-l=line (production, staging, dev, int, ...)"
     echo ""
 }
+LINE='production'
 
 while [ "$1" != "" ]; do
     PARAM=`echo $1 | awk -F= '{print $1}'`
@@ -29,62 +30,67 @@ while [ "$1" != "" ]; do
             usage
             exit
             ;;
-        -p)
+        -p | --prometheus_pushgateway_url)
             PROMETHEUS_PUSHGATEWAY_URL=$VALUE
             ;;
-        -s)
+        -s | --sre_team)
            SRE_TEAM=$VALUE
+           ;;
+        -l | --line)
+           LINE=$VALUE
            ;;
         *)
             echo "ERROR: unknown parameter \"$PARAM\""
             usage
-            exit 1
+            exit 0
             ;;
     esac
     shift
 done
 
+
+
+
 if [ -z "$SRE_TEAM" ]; then
  echo "please define sre team paramete example -s=sret1"
 fi
 
+POD=$(oc get pod  -o jsonpath='{.items.*.metadata.name}' | sed 's/ /\n/g' | grep 'gitlab-task-runner-') || exit 0 
+OUTPUT=$(oc exec $POD -i "backup-utility") || exit 0
 if [ -z "$PROMETHEUS_PUSHGATEWAY_URL" ]; then
- CMD='backup-utility'
+    echo "$OUTPUT" || exit 0
+    exit 0
 else
-    CMD=$(cat <<-EOF
-    # execute the backup and capture the output
-    output=\$(backup-utility);
-    # caputre the backup success result
-    RESULT=\$?;
-    # use awk to tranform logs into metric... 
-    # todo scrape all this and do with ELK....
-    METRICS=\$(
-    #define the type of metric 
-    #for every repo we have a metric indicating backup success
-    echo "#TYPE gitlab_backup_repo gauge";
-    echo "\$output" | 
-    # awk is your friend to transform with into prometheus metrics
-    awk -v h="\$HOSTNAME" -v ostype="\$OSTYPE"  '/ .*\[.*\]/{
-    gsub("Dumping","");
-    gsub("\[DONE\]",0);
-    gsub("\[SKIPPED\]",1);
-    gsub("\[WARNING\]",2);
-    gsub("\[ERROR\]",3);
-    gsub("\[.*\]",4);
-    gsub(" \* ","");
-    gsub("/","-");
-    gsub("-","_");
-    printf "gitlab_backup_repo {repo=\"" \$1 "\",certname=\"%s\",os=\"%s\",
-    project=\"chtopo_gitlab_backup\",line=\"production\",sre_team=\"$SRE_TEAM\"} %d\n",h,ostype, \$NF;
-    }'; 
-    # finaly the global sucess of the backup
-    echo -e "#TYPE gitlab_backup_success gauge\ngitlab_backup_success{certname=\"\$HOSTNAME\",os=\"\$OSTYPE\",
-    project=\"chtopo_gitlab_backup\",line=\"production\",sre_team=\"$SRE_TEAM\"} \$RESULT\n");
-    echo -e "\$METRICS" | curl --data-binary @- $PROMETHEUS_PUSHGATEWAY_URL
-EOF
-)
-fi
+    RESULT=$?
+    H=$(oc exec $POD -i "/bin/echo" "\$HOSTNAME") || exit 0
+    OS=$(oc exec $POD -i "/bin/echo" "\$OSTYPE") || exit 0
+    METRICS=$(
+        #define the type of metric 
+        #for every repo we have a metric indicating backup success
+        echo "#TYPE gitlab_backup_repo gauge";
+        echo "$OUTPUT" | 
+        # awk is your friend to transform the output into prometheus metrics
+        awk -v h="$H" -v ostype="$OS" -v sre_team="$SRE_TEAM"  -v line="$LINE" '/ .*\[.*\]/{
+        gsub("Dumping","");
+        gsub("\[DONE\]",0); 
+        gsub("\[SKIPPED\]",1);
+        gsub("\[WARNING\]",2);
+        gsub("\[ERROR\]",3);
+        gsub("\[.*\]",4);
+        gsub(" \* ","");
+        gsub("/","-");
+        gsub("-","_");
+        printf "gitlab_backup_repo {repo=\"" $1 "\",certname=\"%s\",os=\"%s\",
+        project=\"gitlab_backup\",line=\"%s\",sre_team=\"%s\"} %d\n",h,ostype,line,sre_team, $NF;
+        }'; 
+        # finaly the global sucess of the backup
+        echo -e "#TYPE gitlab_backup_success gauge\n
+        gitlab_backup_success{certname=\"$H\",os=\"$OS\", project=\"gitlab_backup\",line=\"$LINE\",sre_team=\"$SRE_TEAM\"} $RESULT\n") || exit 0
 
-POD=$(oc get pod  -o jsonpath='{.items.*.metadata.name}' | sed 's/ /\n/g' | grep 'gitlab-task-runner-') 
-echo $CMD
-oc exec $POD -it "'""$CMD""'" || exit 0
+    # lets push the metrics to the gateway
+    echo -e "$METRICS" | curl --data-binary @- $PROMETHEUS_PUSHGATEWAY_URL || exit 0
+    # never fail, because failure is bad
+    echo "$OUTPUT"
+    echo "result=$RESULT"
+    exit 0 
+fi
