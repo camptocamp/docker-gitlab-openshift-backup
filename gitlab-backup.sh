@@ -15,9 +15,9 @@ function usage()
     echo "this intial the gitlab bakcup, using task runner from gitlab helm chart"
     echo "./gitlab-backup.sh"
     echo "\t-h --help"
-    echo "\t-p=prometheus_pushgateway_url (reports metrics backup)"
-    echo "\-s=sre_team (sret1 or sret2, etc..)"
-    echo "\-l=line (production, staging, dev, int, ...)"
+    echo "\t-p(or --prometheus_pushgateway_url)=prometheus_pushgateway_url (reports metrics backup)"
+    echo "\-s(or --sre_team)=sre_team (sret1 or sret2, etc..)"
+    echo "\-l(or --line)=line (production, staging, dev, int, ...)"
     echo ""
 }
 LINE='production'
