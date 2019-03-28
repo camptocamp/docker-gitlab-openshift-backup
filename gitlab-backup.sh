@@ -57,11 +57,11 @@ fi
 
 export POD=$(oc get pod  -o jsonpath='{.items.*.metadata.name}' | sed 's/ /\n/g' | grep 'gitlab-task-runner-') || exit 0 
 export OUTPUT=$(oc exec $POD -i "backup-utility") || exit 0
+export RESULT=$?
 if [ -z "$PROMETHEUS_PUSHGATEWAY_URL" ]; then
     echo "$OUTPUT" || exit 0
     exit 0
 else
-    export RESULT=$?
     export H=$(oc exec $POD -i "hostname") || exit 0
     export OS=$(oc exec $POD -it "cat" "/etc/os-release" ) || exit 0
     export OS=$(echo "$OS" | grep -e "^NAME=" | sed 's/NAME=//g' | sed 's/"//g')
