@@ -56,7 +56,7 @@ if [ -z "$SRE_TEAM" ]; then
 fi
 
 export POD=$(oc get pod  -o jsonpath='{.items.*.metadata.name}' | sed 's/ /\n/g' | grep 'gitlab-task-runner-') || exit 0 
-export OUTPUT=$(oc exec $POD -i "backup-utility") || exit 0
+export OUTPUT=$(oc exec $POD -i "backup-utility")
 export RESULT=$?
 if [ -z "$PROMETHEUS_PUSHGATEWAY_URL" ]; then
     echo "$OUTPUT" || exit 0
