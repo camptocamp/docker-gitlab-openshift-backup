@@ -20,7 +20,7 @@ function usage()
     echo "\-l(or --line)=line (production, staging, dev, int, ...)"
     echo ""
 }
-LINE='production'
+LINE='prod'
 
 while [ "$1" != "" ]; do
     PARAM=`echo $1 | awk -F= '{print $1}'`
