@@ -64,7 +64,7 @@ if [[ "$SKIP" == "" ]];then
 export OUTPUT=$(oc exec $POD -i "backup-utility")
 else
 echo "SKIPPING $SKIP"
-export OUTPUT=$(oc exec $POD -i "backup-utility SKIP=$SKIP")
+export OUTPUT=$(oc exec $POD -i "backup-utility --skip $SKIP")
 fi
 export RESULT=$?
 if [ -z "$PROMETHEUS_PUSHGATEWAY_URL" ]; then
