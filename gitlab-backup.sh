@@ -64,8 +64,8 @@ if [[ "$SKIP" == "" ]];then
 echo "Executing : oc exec $POD -i "/usr/local/bin/backup-utility/backup-utility""
 export OUTPUT=$(oc exec $POD -i "/usr/local/bin/backup-utility/backup-utility")
 else
-echo "Executing : oc exec $POD -i /usr/local/bin/backup-utility --skip $SKIP"
-export OUTPUT=$(oc exec $POD -i /usr/local/bin/backup-utility --skip $SKIP)
+echo "Executing : oc exec $POD -i -- /usr/local/bin/backup-utility --skip $SKIP"
+export OUTPUT=$(oc exec $POD -i -- /usr/local/bin/backup-utility --skip $SKIP)
 fi
 echo $OUTPUT
 export RESULT=$?
