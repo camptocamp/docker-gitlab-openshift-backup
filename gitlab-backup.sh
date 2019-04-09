@@ -61,11 +61,11 @@ fi
 
 export POD=$(oc get pod  -o jsonpath='{.items.*.metadata.name}' | sed 's/ /\n/g' | grep 'gitlab-task-runner-') || exit 0
 if [[ "$SKIP" == "" ]];then
-echo "Executing : oc exec $POD -i "backup-utility""
-export OUTPUT=$(oc exec $POD -i "backup-utility")
+echo "Executing : oc exec $POD -i "/usr/local/bin/backup-utility/backup-utility""
+export OUTPUT=$(oc exec $POD -i "/usr/local/bin/backup-utility/backup-utility")
 else
-echo "Executing : oc exec $POD -i 'backup-utility --skip $SKIP'"
-export OUTPUT=$(oc exec $POD -i "backup-utility --skip $SKIP")
+echo "Executing : oc exec $POD -i '/usr/local/bin/backup-utility/backup-utility --skip $SKIP'"
+export OUTPUT=$(oc exec $POD -i "/usr/local/bin/backup-utility/backup-utility" "--skip" "$SKIP")
 fi
 echo $OUTPUT
 export RESULT=$?
