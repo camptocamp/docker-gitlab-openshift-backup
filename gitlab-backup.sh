@@ -61,11 +61,13 @@ fi
 
 export POD=$(oc get pod  -o jsonpath='{.items.*.metadata.name}' | sed 's/ /\n/g' | grep 'gitlab-task-runner-') || exit 0
 if [[ "$SKIP" == "" ]];then
+echo "Executing : oc exec $POD -i "backup-utility""
 export OUTPUT=$(oc exec $POD -i "backup-utility")
 else
-echo "SKIPPING $SKIP"
+echo "Executing : oc exec $POD -i 'backup-utility --skip $SKIP'"
 export OUTPUT=$(oc exec $POD -i "backup-utility --skip $SKIP")
 fi
+echo $OUTPUT
 export RESULT=$?
 if [ -z "$PROMETHEUS_PUSHGATEWAY_URL" ]; then
     echo "$OUTPUT" || exit 0
