@@ -67,8 +67,8 @@ else
 echo "Executing : oc exec $POD -i -- /usr/local/bin/backup-utility --skip $SKIP"
 export OUTPUT=$(oc exec $POD -i -- /usr/local/bin/backup-utility --skip $SKIP)
 fi
-echo $OUTPUT
 export RESULT=$?
+echo $OUTPUT
 if [ -z "$PROMETHEUS_PUSHGATEWAY_URL" ]; then
     echo "$OUTPUT" || exit 0
     exit 0
