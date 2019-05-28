@@ -22,6 +22,8 @@ function usage()
     echo ""
 }
 LINE='prod'
+BACKUP_LOG_FILE='/tmp/gitlab-backup.log'
+date > $BACKUP_LOG_FILE
 
 while [ "$1" != "" ]; do
     PARAM=`echo $1 | awk -F= '{print $1}'`
@@ -47,7 +49,7 @@ while [ "$1" != "" ]; do
             echo "ERROR: unknown parameter \"$PARAM\""
             usage
             exit 0
-            ;;
+            ;;/tmp/gitlab-backup.log
     esac
     shift
 done
@@ -68,7 +70,9 @@ echo "Executing : oc exec $POD -i -- /usr/local/bin/backup-utility --skip $SKIP"
 export OUTPUT=$(oc exec $POD -i -- /usr/local/bin/backup-utility --skip $SKIP)
 fi
 export RESULT=$?
-echo $OUTPUT
+echo "result:${RESULT}" >> $BACKUP_LOG_FILE
+echo $OUTPUT | tee -a $BACKUP_LOG_FILE
+oc exec $POD -i -- s3md put "$BACKUP_LOG_FILE" "s3://${BACKUP_BUCKET_NAME}/log/${BACKUP_LOG_FILE}"
 if [ -z "$PROMETHEUS_PUSHGATEWAY_URL" ]; then
     echo "$OUTPUT" || exit 0
     exit 0
