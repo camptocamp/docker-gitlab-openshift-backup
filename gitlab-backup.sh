@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###################################################################
-#Script Name    : finds the gitlab task runner, intiate a backup
+#Script Name    : finds the gitlab task runner, initiate a backup
 #                 and report metrics to a prometheus pushgateway
 #Description    :
 #Args           :
@@ -11,8 +11,8 @@
 
 function usage()
 {
-    echo "git lab backup for openshif:"
-    echo "this intial the gitlab bakcup, using task runner from gitlab helm chart"
+    echo "git lab backup for openshift:"
+    echo "this initial the gitlab backup, using task runner from gitlab helm chart"
     echo "./gitlab-backup.sh"
     echo "\t-h --help"
     echo "\t-p(or --prometheus_pushgateway_url)=prometheus_pushgateway_url (reports metrics backup)"
@@ -56,19 +56,19 @@ done
 
 
 if [ -z "$SRE_TEAM" ]; then
- echo "please define sre team paramete example -s=sret1"
+ echo "please define sre team parameter example -s=sret1"
 fi
 
 export POD=$(oc get pod  -o jsonpath='{.items.*.metadata.name}' | sed 's/ /\n/g' | grep 'gitlab-task-runner-') || exit 0
 if [[ "$SKIP" == "" ]];then
-echo "Executing : oc exec $POD -i "/usr/local/bin/backup-utility/backup-utility""
-export OUTPUT=$(oc exec $POD -i "/usr/local/bin/backup-utility/backup-utility")
+echo "Executing : oc exec $POD -i "/usr/local/bin/backup-utility"
+export OUTPUT=$(oc exec $POD -i "/usr/local/bin/backup-utility")
 else
 echo "Executing : oc exec $POD -i -- /usr/local/bin/backup-utility --skip $SKIP"
 export OUTPUT=$(oc exec $POD -i -- /usr/local/bin/backup-utility --skip $SKIP)
 fi
-echo $OUTPUT
 export RESULT=$?
+echo $OUTPUT
 if [ -z "$PROMETHEUS_PUSHGATEWAY_URL" ]; then
     echo "$OUTPUT" || exit 0
     exit 0
@@ -94,7 +94,7 @@ else
         gsub("-","_");
         printf "gitlab_backup_repo {repo=\"%s\",certname=\"%s\",os=\"%s\",project=\"gitlab_backup\",line=\"%s\",sre_team=\"%s\"} %d\n",$1,h,ostype,line,sre_team, $NF;
         }';
-        # finaly the global sucess of the backup
+        # finally the global success of the backup
         echo -e "#TYPE gitlab_backup_success gauge"
         echo -e "gitlab_backup_success{certname=\"$H\",os=\"$OS\", project=\"gitlab_backup\",line=\"$LINE\",sre_team=\"$SRE_TEAM\"} $RESULT") || exit 0
 
