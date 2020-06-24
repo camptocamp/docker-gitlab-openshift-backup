@@ -5,5 +5,5 @@ docker build for backuping gitlab on openshift
 run with options.
 
 ```bash
-/usr/bin/gitlab-backup -s=[your_team_name] -p=[prometheus_pushgateway_url]
+/usr/bin/gitlab-backup -s=your_team_name -p=prometheus_pushgateway_url [-t=backup_name_timestamp]
 ```

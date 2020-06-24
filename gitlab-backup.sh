@@ -16,9 +16,10 @@ function usage()
     echo "./gitlab-backup.sh"
     echo "\t-h --help"
     echo "\t-p(or --prometheus_pushgateway_url)=prometheus_pushgateway_url (reports metrics backup)"
-    echo "\-s(or --sre_team)=sre_team (sret1 or sret2, etc..)"
-    echo "\-l(or --line)=line (production, staging, dev, int, ...)"
-    echo "\-\-skip skip a backup unit, check https://docs.gitlab.com/ee/raketasks/backup_restore.html#excluding-specific-directories-from-the-backup"
+    echo "\t-s(or --sre_team)=sre_team (sret1 or sret2, etc..)"
+    echo "\t-l(or --line)=line (production, staging, dev, int, ...)"
+		echo "\t-t(or --timestamp)=timestamp The timestamp to use for the backup name ( default is day-month-year )"
+    echo "\t\-\-skip skip a backup unit, check https://docs.gitlab.com/ee/raketasks/backup_restore.html#excluding-specific-directories-from-the-backup"
     echo ""
 }
 LINE='prod'
