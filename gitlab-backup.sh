@@ -64,7 +64,7 @@ if [ -z "$SRE_TEAM" ]; then
 fi
 
 if [ -z "$TIMESTAMP" ]; then
-  TIMESTAMP=$(date +%d-%m-%G)
+  TIMESTAMP=$(date +%A)
 else
 	TIMESTAMP=$($TIMESTAMP)
 fi
