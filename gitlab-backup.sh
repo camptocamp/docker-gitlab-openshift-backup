@@ -29,15 +29,15 @@ while [ "$1" != "" ]; do
     VALUE=`echo $1 | awk -F= '{print $2}'`
     case $PARAM in
         -h | --help)
-            usage
-            exit
-            ;;
+          usage
+          exit
+          ;;
         -p | --prometheus_pushgateway_url)
-            PROMETHEUS_PUSHGATEWAY_URL=$VALUE
-            ;;
+          PROMETHEUS_PUSHGATEWAY_URL=$VALUE
+          ;;
         -s | --sre_team)
-           SRE_TEAM=$VALUE
-           ;;
+          SRE_TEAM=$VALUE
+          ;;
         -l | --line)
           LINE=$VALUE
           ;;
@@ -45,9 +45,8 @@ while [ "$1" != "" ]; do
           SKIP=$VALUE
           ;;
         -t | --timestamp)
-           TIMESTAMP=$VALUE
-            exit
-            ;;
+          TIMESTAMP=$VALUE
+          ;;
         *)
             echo "ERROR: unknown parameter \"$PARAM\""
             usage
