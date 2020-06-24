@@ -63,7 +63,11 @@ if [ -z "$SRE_TEAM" ]; then
  echo "please define sre team parameter example -s=sret1"
 fi
 
-TIMESTAMP=${$(eval $TIMESTAMP):-$(date +%d-%m-%G)}
+if [ -z "$TIMESTAMP" ]; then
+  TIMESTAMP=$(date +%d-%m-%G)
+else
+	TIMESTAMP=eval $TIMESTAMP
+fi
 
 export POD=$(oc get pod  -o jsonpath='{.items.*.metadata.name}' | sed 's/ /\n/g' | grep 'gitlab-task-runner-') || exit 0
 if [[ "$SKIP" == "" ]];then
